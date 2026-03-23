@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StrayZero - Modern Stray Dog Management (Static Version)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --secondary-gradient: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+            --bg-soft: #f8fafc;
+            --text-main: #1e293b;
+            --sidebar-width: 280px;
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-soft); color: var(--text-main); overflow-x: hidden; }
+        
+        .hero { 
+            background: var(--primary-gradient); 
+            color: white; 
+            padding: 100px 0; 
+            border-radius: 0 0 50px 50px;
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+        }
+        .navbar { background: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(10px); }
+        .card { 
+            border: none; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover { 
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+        }
+        .stats-card { 
+            border-radius: 24px; 
+            padding: 24px;
+            background: white;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .btn-primary-custom { 
+            background: var(--primary-gradient); 
+            border: none; 
+            color: white; 
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            transition: opacity 0.2s;
+        }
+        .btn-primary-custom:hover { opacity: 0.9; color: white; }
+        
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: white;
+            padding: 2rem;
+            border-right: 1px solid #e2e8f0;
+            z-index: 1000;
+            display: none; /* Hidden by default in static version unless logged in */
+        }
+        .main-content {
+            padding: 2rem;
+            transition: margin-left 0.3s;
+        }
+        .nav-link-custom {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #64748b;
+            text-decoration: none;
+            transition: 0.2s;
+            margin-bottom: 8px;
+        }
+        .nav-link-custom:hover, .nav-link-custom.active {
+            background: #f1f5f9;
+            color: #6366f1;
+        }
+        .nav-link-custom i { font-size: 20px; }
+        .badge-status { padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 12px; }
+        .form-control, .form-select {
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            border-color: #6366f1;
+        }
+        .section-content { display: none; }
+        .section-content.active { display: block; }
+        
+        @media (max-width: 991px) {
+            .sidebar { display: none !important; }
+            .main-content { margin-left: 0 !important; }
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light sticky-top shadow-sm" id="main-nav">
+    <div class="container">
+        <a class="navbar-brand fw-bold fs-4 text-primary" href="#" onclick="showSection('home')">
+            <i class="bi bi-paw-fill"></i> StrayZero
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="navbar-nav ms-auto align-items-center">
+                <a class="nav-link px-3" href="#" onclick="showSection('dogs')">Browse Dogs</a>
+                <a class="nav-link px-3" href="#" onclick="showSection('report')">Report Stray</a>
+                <a class="nav-link px-3" href="#" onclick="showSection('login')">Admin Login</a>
+                <a class="btn btn-primary-custom ms-lg-3" href="#" onclick="showSection('register')">Join Community</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4 main-content" id="content-area">
+    
+    <!-- Home Section -->
+    <div id="home" class="section-content active">
+        <div class="row align-items-center mb-5 py-5">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill mb-3 fw-bold">Helping Stray Dogs Every Day</span>
+                <h1 class="display-3 fw-bold mb-4" style="line-height: 1.1;">Ensuring Every Stray Finds a <span class="text-primary">Safe Home.</span></h1>
+                <p class="lead text-muted mb-5 fs-5">StrayZero is a comprehensive LGU-led platform to monitor, rescue, and find homes for stray animals in our community.</p>
+                <div class="d-flex flex-column flex-sm-row gap-3">
+                    <a href="#" onclick="showSection('report')" class="btn btn-primary-custom btn-lg px-4">
+                        <i class="bi bi-megaphone me-2"></i> Report a Stray
+                    </a>
+                    <a href="#" onclick="showSection('dogs')" class="btn btn-outline-secondary btn-lg px-4 rounded-4">
+                        <i class="bi bi-search me-2"></i> Find a Companion
+                    </a>
+                </div>
+                <div class="mt-5 d-flex align-items-center gap-4">
+                    <div>
+                        <h4 class="fw-bold mb-0">120+</h4>
+                        <small class="text-muted">Dogs Rescued</small>
+                    </div>
+                    <div class="vr"></div>
+                    <div>
+                        <h4 class="fw-bold mb-0">85+</h4>
+                        <small class="text-muted">Successful Adoptions</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="position-relative">
+                    <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 bg-primary opacity-10 rounded-circle" style="transform: scale(1.2) translate(-40%, -40%) !important;"></div>
+                    <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=2069&auto=format&fit=crop" class="img-fluid rounded-5 shadow-2xl position-relative z-1" alt="Happy Dogs">
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 py-5">
+            <div class="col-md-4">
+                <div class="card p-4 h-100 border-0 shadow-sm text-center">
+                    <div class="stats-icon bg-primary-subtle text-primary mx-auto mb-4">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h5 class="fw-bold">Report & Monitor</h5>
+                    <p class="text-muted">Citizens can quickly report sightings of stray dogs with photos and location details.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-4 h-100 border-0 shadow-sm text-center">
+                    <div class="stats-icon bg-success-subtle text-success mx-auto mb-4">
+                        <i class="bi bi-heart-pulse"></i>
+                    </div>
+                    <h5 class="fw-bold">Shelter Care</h5>
+                    <p class="text-muted">LGU officers manage captured dogs, ensuring they receive proper care and identification.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-4 h-100 border-0 shadow-sm text-center">
+                    <div class="stats-icon bg-warning-subtle text-warning mx-auto mb-4">
+                        <i class="bi bi-house-heart"></i>
+                    </div>
+                    <h5 class="fw-bold">Easy Adoption</h5>
+                    <p class="text-muted">Find your new best friend through our verified adoption process and community support.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dog Catalog Section -->
+    <div id="dogs" class="section-content">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4 mb-5">
+            <div>
+                <h2 class="fw-bold mb-1">Dog Catalog</h2>
+                <p class="text-muted mb-0">Browse and find your future best friend</p>
+            </div>
+            <div class="card border-0 shadow-sm p-2">
+                <div class="d-flex gap-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" id="dogSearch" class="form-control border-start-0 ps-0" placeholder="ID, Breed, Color..." style="min-width: 200px;">
+                    </div>
+                    <select id="statusFilter" class="form-select" style="min-width: 150px;">
+                        <option value="">All Status</option>
+                        <option value="captured">Captured</option>
+                        <option value="in_shelter">In Shelter</option>
+                        <option value="available">Available</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4" id="dog-grid">
+            <!-- Dogs will be populated by JS -->
+        </div>
+    </div>
+
+    <!-- Report Stray Section -->
+    <div id="report" class="section-content">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-5 overflow-hidden mb-5">
+                    <div class="card-header bg-primary text-white p-4 border-0">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-white bg-opacity-25 rounded-circle p-3">
+                                <i class="bi bi-megaphone-fill fs-3"></i>
+                            </div>
+                            <div>
+                                <h3 class="fw-bold mb-0">Report a Stray Dog</h3>
+                                <p class="mb-0 opacity-75">Help us keep our community safe and animals cared for.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-4 p-md-5">
+                        <div id="report-success" class="alert alert-success border-0 shadow-sm rounded-4 mb-4 p-3 d-none">
+                            <i class="bi bi-check-circle-fill me-2"></i> Stray dog reported! Thank you for your help.
+                        </div>
+                        <form id="strayReportForm">
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Location</label>
+                                    <input type="text" name="location" class="form-control" placeholder="e.g., Near Central Park, Brgy. San Jose" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Dog Color</label>
+                                    <input type="text" name="color" class="form-control" placeholder="e.g., Brown and White" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Estimated Size</label>
+                                    <select name="size" class="form-select" required>
+                                        <option value="small">Small (Puppy-sized)</option>
+                                        <option value="medium" selected>Medium (Average dog)</option>
+                                        <option value="large">Large (Big dog)</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Additional Details</label>
+                                    <textarea name="description" class="form-control" rows="4" placeholder="Please provide specific location details and any observations..." required></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Upload Photo (Optional)</label>
+                                    <div class="upload-zone p-4 bg-light border-2 border-dashed rounded-4 text-center position-relative">
+                                        <input type="file" class="form-control position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer" accept="image/*">
+                                        <div>
+                                            <i class="bi bi-camera fs-1 text-muted d-block mb-2"></i>
+                                            <span class="text-muted">Click to upload or drag and drop</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 mt-5">
+                                    <button type="submit" class="btn btn-primary-custom w-100 py-3 fs-5 shadow-sm">
+                                        Submit Report <i class="bi bi-send-fill ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Section -->
+    <div id="login" class="section-content">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-lg">
+                    <div class="card-body p-5">
+                        <h3 class="text-center mb-4"><i class="bi bi-shield-lock text-primary"></i> Admin Login</h3>
+                        <form id="loginForm">
+                            <div class="mb-4">
+                                <input type="text" class="form-control form-control-lg" placeholder="Username" required>
+                            </div>
+                            <div class="mb-4">
+                                <input type="password" class="form-control form-control-lg" placeholder="Password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 py-3 fs-5">Login to Dashboard</button>
+                        </form>
+                        <div class="text-center mt-3">
+                            <small class="text-muted">Note: Admin dashboard is restricted in the demo version.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Section -->
+    <div id="register" class="section-content">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-lg">
+                    <div class="card-body p-5">
+                        <h3 class="text-center mb-4"><i class="bi bi-person-plus text-success"></i> Citizen Register</h3>
+                        <div id="register-success" class="alert alert-success d-none">Account created! You can now login.</div>
+                        <form id="registerForm">
+                            <div class="mb-3"><input type="text" class="form-control" placeholder="Username" required></div>
+                            <div class="mb-3"><input type="email" class="form-control" placeholder="Email" required></div>
+                            <div class="mb-4"><input type="password" class="form-control" placeholder="Password" required></div>
+                            <button type="submit" class="btn btn-success w-100 py-3">Register Now</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<footer class="bg-white py-4 mt-5 border-top">
+    <div class="container text-center">
+        <p class="text-muted mb-1">&copy; 2026 StrayZero - All Rights Reserved</p>
+        <p class="small text-muted mb-0">
+            <strong>Developer:</strong> John Lloyd Manulang Cruz | 
+            <a href="https://facebook.com/JohnManulangCruz" target="_blank" class="text-decoration-none text-primary ms-1">
+                <i class="bi bi-facebook"></i> John Manulang Cruz
+            </a> | 
+            <a href="https://instagram.com/Tiradores357" target="_blank" class="text-decoration-none text-danger ms-1">
+                <i class="bi bi-instagram"></i> Tiradores357
+            </a>
+        </p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Mock Dog Data
+    const mockDogs = [
+        { id: 1, collar_id: 'DOG0001', breed: 'Golden Retriever Mix', color: 'Golden', size: '45', status: 'available', location: 'Central Park', photo: 'https://images.unsplash.com/photo-1552053831-71594a27632d?q=80&w=500' },
+        { id: 2, collar_id: 'DOG0002', breed: 'Aspin', color: 'Brown/Black', size: '38', status: 'available', location: 'Public Market', photo: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=500' },
+        { id: 3, collar_id: 'DOG0003', breed: 'German Shepherd Mix', color: 'Tan/Black', size: '52', status: 'in_shelter', location: 'Brgy. San Jose', photo: 'https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?q=80&w=500' },
+        { id: 4, collar_id: 'DOG0004', breed: 'Poodle Mix', color: 'White', size: '25', status: 'available', location: 'City Hall', photo: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=500' }
+    ];
+
+    // Section Switching Logic
+    function showSection(sectionId) {
+        document.querySelectorAll('.section-content').forEach(section => {
+            section.classList.remove('active');
+        });
+        document.getElementById(sectionId).classList.add('active');
+        window.scrollTo(0, 0);
+        
+        // Update nav active state
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        // Hide mobile nav on selection
+        const navbarCollapse = document.getElementById('navbarNav');
+        if (navbarCollapse.classList.contains('show')) {
+            new bootstrap.Collapse(navbarCollapse).hide();
+        }
+
+        if(sectionId === 'dogs') renderDogs();
+    }
+
+    // Render Dogs in Catalog
+    function renderDogs(filter = '', status = '') {
+        const grid = document.getElementById('dog-grid');
+        grid.innerHTML = '';
+        
+        const filtered = mockDogs.filter(dog => {
+            const matchesSearch = dog.collar_id.toLowerCase().includes(filter.toLowerCase()) || 
+                                 dog.breed.toLowerCase().includes(filter.toLowerCase());
+            const matchesStatus = status === '' || dog.status === status;
+            return matchesSearch && matchesStatus;
+        });
+
+        filtered.forEach(dog => {
+            const statusLabels = {
+                available: { class: 'success', label: 'Available' },
+                in_shelter: { class: 'info', label: 'In Shelter' },
+                captured: { class: 'primary', label: 'Captured' }
+            };
+            const s = statusLabels[dog.status];
+
+            grid.innerHTML += `
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm overflow-hidden">
+                        <div class="position-relative">
+                            <img src="${dog.photo}" class="card-img-top object-fit-cover" style="height: 220px;" alt="Dog">
+                            <span class="position-absolute top-0 end-0 m-3 badge-status bg-${s.class} text-white shadow-sm">
+                                ${s.label}
+                            </span>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="fw-bold text-dark mb-0">${dog.breed}</h5>
+                                <small class="text-primary fw-bold">${dog.collar_id}</small>
+                            </div>
+                            <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i> ${dog.location}</p>
+                            <div class="d-flex gap-3 mb-4">
+                                <div class="text-center bg-light rounded-3 p-2 flex-fill">
+                                    <small class="text-muted d-block small uppercase" style="font-size: 10px;">Color</small>
+                                    <span class="fw-bold small">${dog.color}</span>
+                                </div>
+                                <div class="text-center bg-light rounded-3 p-2 flex-fill">
+                                    <small class="text-muted d-block small uppercase" style="font-size: 10px;">Size</small>
+                                    <span class="fw-bold small">${dog.size} cm</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary-custom w-100 rounded-pill" onclick="alert('In this demo version, adoption requests are simulated.')">
+                                Adopt Me <i class="bi bi-heart-fill ms-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        if(filtered.length === 0) {
+            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted">No dogs found.</div>';
+        }
+    }
+
+    // Event Listeners
+    document.getElementById('dogSearch')?.addEventListener('input', (e) => {
+        renderDogs(e.target.value, document.getElementById('statusFilter').value);
+    });
+
+    document.getElementById('statusFilter')?.addEventListener('change', (e) => {
+        renderDogs(document.getElementById('dogSearch').value, e.target.value);
+    });
+
+    document.getElementById('strayReportForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        document.getElementById('report-success').classList.remove('d-none');
+        e.target.reset();
+        window.scrollTo(0, 0);
+    });
+
+    document.getElementById('loginForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('Admin login is disabled in the static GitHub Pages version.');
+    });
+
+    document.getElementById('registerForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        document.getElementById('register-success').classList.remove('d-none');
+        e.target.reset();
+    });
+
+    // Initial Render
+    renderDogs();
+</script>
+
+</body>
+</html>
